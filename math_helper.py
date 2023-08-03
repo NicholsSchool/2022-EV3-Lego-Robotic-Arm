@@ -1,40 +1,16 @@
-import unittest
-from math_helper import scale, scale_stick
+# Math helpers in separate file for easy unit testing
+def scale(val, src, dst):
+    return (float(val - src[0]) / (src[1] - src[0])) * (dst[1] - dst[0]) + dst[0]
 
 
-VALID_DEFAULT_INPUT = [
-    (0, -80),
-    (136, 0),
-    (255, 80),
-    (128, 0)
-]
+def scale_stick(value, deadzone=10, scale_to=80, invert=False):
+    """ scale a range of input to a range of output, optionally applying a deadzone or inverting the result """
+    result = scale(value, (0, 255), (-scale_to, scale_to))
 
-VALID_DEADZONE_INPUT = [
-    (0, 0, -80),
-    (255, 0, 80),
-    (128, 0, 0),
-    (136, 10, 0),
-    (140, 10, 0),
-    (140, 5, 7),
-    (150, 10, 14),
-    (255, 0, 80),
-    (128, 0, 0),
-]
+    if deadzone and result < deadzone and result > -deadzone:
+        result = 0
 
+    if invert:
+        result *= -1
 
-class TestMathHelper(unittest.TestCase):
-
-    def test_scale_stick_default(self):
-        for input_set in VALID_DEFAULT_INPUT:
-            with self.subTest(data=input_set):
-                self.assertEqual(scale_stick(input_set[0]), input_set[1])
-
-    def test_scale_stick_default_inverted(self):
-        for input_set in VALID_DEFAULT_INPUT:
-            with self.subTest(data=input_set):
-                self.assertEqual(scale_stick(input_set[0], invert=True), -input_set[1])
-
-    def test_scale_stick_deadzone(self):
-        for input_set in VALID_DEADZONE_INPUT:
-            with self.subTest(data=input_set):
-                self.assertEqual(int(scale_stick(input_set[0], deadzone=input_set[1])), input_set[2])
+    return result
